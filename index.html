@@ -1,0 +1,299 @@
+<title>Trace It! HQ</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: a trainer console - header, four game tabs, one play surface */
+:root{
+  --bg:#EEF2FB; --panel:#FFFFFF; --ink:#14213D; --muted:#56628A; --line:#D3DAEC;
+  --blue:#1D43C8; --red:#E63F5B; --sun:#FFC845; --ok:#1C8F58; --bad:#C8243B; --on-accent:#FFFFFF; --blue-soft:#DCE4FF; --red-soft:#FFE1E6; --sun-soft:#FFF1C7;
+  --display:"Fredoka","Trebuchet MS",system-ui,sans-serif; --body:"Atkinson Hyperlegible","Segoe UI",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0D1430; --panel:#18214A; --ink:#EEF2FF; --muted:#A9B4D6; --line:#2C3870;
+  --blue:#7E9CFF; --red:#FF6F87; --sun:#FFD25E; --ok:#4FD08F; --bad:#FF7A8C; --on-accent:#0D1430; --blue-soft:#243266; --red-soft:#4A2140; --sun-soft:#463A17; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0D1430; --panel:#18214A; --ink:#EEF2FF; --muted:#A9B4D6; --line:#2C3870;
+  --blue:#7E9CFF; --red:#FF6F87; --sun:#FFD25E; --ok:#4FD08F; --bad:#FF7A8C; --on-accent:#0D1430; --blue-soft:#243266; --red-soft:#4A2140; --sun-soft:#463A17; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.5;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
+.wrap{max-width:1080px;margin:0 auto;display:grid;gap:18px}
+h1,h2,h3{font-family:var(--display);line-height:1.15;text-wrap:balance;margin:0}
+header.top{display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between}
+.brand{display:flex;gap:14px;align-items:center}
+.brand .mini{width:58px;height:58px;flex:none}
+.brand h1{font-size:clamp(28px,4.5vw,40px);font-weight:700}
+.brand p{margin:0;color:var(--muted);font-size:15px}
+.badge{font-family:var(--mono);font-weight:700;background:var(--sun);color:#14213D;border-radius:999px;padding:8px 16px;font-size:15px;white-space:nowrap}
+nav.tabs{display:flex;gap:8px;flex-wrap:wrap}
+nav.tabs button{font-family:var(--display);font-weight:600;font-size:17px;border:2px solid var(--line);background:var(--panel);color:var(--ink);border-radius:14px;padding:10px 16px;cursor:pointer}
+nav.tabs button[aria-selected="true"]{background:var(--blue);border-color:var(--blue);color:var(--on-accent)}
+nav.tabs button:focus-visible,button:focus-visible,select:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:22px;display:grid;gap:16px;min-width:0}
+.lead{color:var(--muted);margin:0;max-width:68ch}
+.btn{font-family:var(--display);font-weight:600;font-size:18px;border:0;border-radius:14px;padding:12px 20px;cursor:pointer;background:var(--blue);color:var(--on-accent)}
+.btn.alt{background:var(--panel);color:var(--ink);border:2px solid var(--line)}
+.btn.red{background:var(--red)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.kicker{font-family:var(--mono);font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--red);font-weight:700}
+/* Sort Rush */
+.rush{display:grid;grid-template-columns:1fr minmax(0,1.3fr) 1fr;gap:16px;align-items:stretch}
+.bin{border-radius:18px;padding:16px;display:grid;gap:6px;align-content:start;min-height:160px;border:3px dashed transparent}
+.bin.rules{background:var(--blue-soft);border-color:var(--blue)}
+.bin.learn{background:var(--red-soft);border-color:var(--red)}
+.bin h3{font-size:20px}
+.bin small{color:var(--muted)}
+.bin .count{font-family:var(--mono);font-size:28px;font-weight:700}
+.card{background:var(--panel);border:2px solid var(--line);border-radius:18px;padding:18px;display:grid;gap:8px;justify-items:center;text-align:center;min-height:190px;align-content:center;box-shadow:0 6px 20px rgba(20,33,61,.08)}
+.card .pic{font-size:54px;line-height:1}
+.card .name{font-family:var(--display);font-size:24px;font-weight:600}
+.card .desc{color:var(--muted);font-size:15px;max-width:34ch}
+.hud{display:flex;gap:10px;flex-wrap:wrap}
+.hud span{font-family:var(--mono);font-weight:700;background:var(--bg);border-radius:10px;padding:6px 12px;font-size:15px}
+.timer{height:10px;border-radius:999px;background:var(--line);overflow:hidden}
+.timer i{display:block;height:100%;background:var(--sun);width:100%;transition:width .25s linear}
+.feedback{min-height:52px;border-radius:12px;padding:10px 14px;font-size:16px}
+.feedback.ok{background:color-mix(in srgb,var(--ok) 16%,transparent);color:var(--ink)}
+.feedback.no{background:color-mix(in srgb,var(--bad) 16%,transparent);color:var(--ink)}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.choices .btn{font-size:19px;padding:16px}
+.review{display:grid;gap:8px}
+.review div{border-left:5px solid var(--bad);background:var(--bg);border-radius:8px;padding:8px 12px;font-size:15px}
+/* Robot lab */
+.subtabs{display:flex;gap:8px;flex-wrap:wrap}
+.subtabs button{font-family:var(--display);font-weight:600;border:2px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:8px 14px;cursor:pointer;font-size:16px}
+.subtabs button[aria-pressed="true"]{background:var(--red);border-color:var(--red);color:var(--on-accent)}
+.lab{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px}
+.box{background:var(--bg);border-radius:16px;padding:16px;display:grid;gap:10px;align-content:start;min-width:0}
+.box h3{font-size:19px}
+.rule{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-family:var(--mono);font-size:15px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px 10px}
+.rule select{font:inherit;font-weight:700;border:1px solid var(--line);border-radius:8px;padding:4px 6px;background:var(--panel);color:var(--ink)}
+.rule .x{margin-left:auto;border:0;background:none;color:var(--muted);font-size:20px;cursor:pointer}
+.creatures{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:10px}
+.cr{background:var(--panel);border:2px solid var(--line);border-radius:14px;padding:6px 6px 8px;display:grid;justify-items:center;gap:2px;font-size:14px;font-weight:700;position:relative}
+.cr svg{width:100%;max-width:90px;height:auto}
+button.cr{cursor:pointer;color:var(--ink);font-family:var(--body)}
+.cr.off{opacity:.3}
+.cr .tag{font-family:var(--display);font-size:15px}
+.cr .tag.g{color:var(--red)} .cr .tag.b{color:var(--blue)}
+.cr.right{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,var(--panel))}
+.cr.wrong{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,var(--panel))}
+.cr.stuck{border-color:var(--sun);background:var(--sun-soft)}
+.model{background:var(--panel);border:2px solid var(--blue);border-radius:14px;padding:12px 14px;font-size:16px}
+.model b{font-family:var(--display);font-size:18px}
+.score{font-family:var(--display);font-size:22px;font-weight:600}
+/* Case files */
+.case{display:grid;gap:14px}
+.case .file{font-family:var(--mono);font-size:13px;color:var(--muted)}
+.case h3{font-size:clamp(22px,3vw,28px)}
+.opts{display:grid;gap:10px}
+.opts button{text-align:left;font-family:var(--body);font-size:17px;border:2px solid var(--line);background:var(--panel);color:var(--ink);border-radius:14px;padding:12px 14px;cursor:pointer;display:flex;gap:12px;align-items:flex-start}
+.opts button b{font-family:var(--mono);color:var(--blue)}
+.opts button.right{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 14%,var(--panel))}
+.opts button.wrong{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 14%,var(--panel))}
+.progress{display:flex;gap:6px;flex-wrap:wrap}
+.progress i{width:26px;height:8px;border-radius:999px;background:var(--line)}
+.progress i.done{background:var(--ok)} .progress i.miss{background:var(--bad)} .progress i.now{background:var(--sun)}
+.end{display:grid;gap:10px;justify-items:start}
+.big{font-family:var(--display);font-size:clamp(34px,6vw,54px);font-weight:700;color:var(--blue)}
+footer{color:var(--muted);font-size:14px}
+@media (max-width:760px){.rush{grid-template-columns:1fr 1fr}.rush .card{grid-column:1/-1;order:-1}.lab{grid-template-columns:1fr}}
+@media (max-width:420px){.choices{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+.pop{animation:pop .35s ease}
+@keyframes pop{from{transform:scale(.92);opacity:.6}to{transform:none;opacity:1}}
+</style><style>
+.steps{display:grid;gap:10px}
+.steps button{font:inherit;text-align:left;border:2px solid var(--line);background:var(--panel);color:var(--ink);border-radius:14px;padding:12px 14px;cursor:pointer;display:flex;gap:12px;align-items:center}
+.steps button .n{font-family:var(--mono);font-weight:700;min-width:28px;height:28px;border-radius:999px;display:grid;place-items:center;background:var(--bg)}
+.steps button.done{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,var(--panel));cursor:default}
+.steps button.done .n{background:var(--ok);color:var(--on-accent)}
+.steps button.shake{animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.bigcard{font-family:var(--display);font-size:clamp(20px,2.8vw,26px);font-weight:600;text-align:center;background:var(--bg);border-radius:18px;padding:22px 16px;min-height:110px;display:grid;place-items:center}
+.three{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.three .btn{color:#fff;font-size:17px;padding:14px 6px}
+.g{background:#1C8F58!important}.y{background:#B87A00!important}.r{background:#C8243B!important}
+.trusted{background:#14213D;color:#fff;border-radius:14px;padding:12px 16px;font-size:15px;display:grid;gap:2px}
+.trusted b{color:#FFC845;font-family:var(--mono);font-size:12px}
+.outrow{display:grid;grid-template-columns:minmax(0,1.5fr) auto;gap:10px;align-items:center;border:2px solid var(--line);border-radius:14px;padding:10px 12px;background:var(--panel)}
+.outrow .o{font-family:var(--mono);font-size:15px}
+.outrow.flagged{border-color:var(--bad)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chips button{font:inherit;font-size:14px;border:2px solid var(--line);background:var(--panel);color:var(--ink);border-radius:999px;padding:5px 12px;cursor:pointer}
+.chips button.right{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 18%,var(--panel))}
+.chips button.wrong{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 18%,var(--panel))}
+.fixbox{grid-column:1/-1;display:grid;gap:6px;border-top:1px dashed var(--line);padding-top:8px}
+.meter{display:flex;gap:6px;align-items:center;font-family:var(--mono);font-weight:700}
+.meter i{width:34px;height:22px;border-radius:6px;background:var(--line)}
+.meter i.on{background:var(--ok)}
+.four{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.four .btn{color:#fff;font-size:16px;padding:14px 6px}.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.two .btn{color:#fff;font-size:17px;padding:14px 6px}.b{background:#1D43C8!important}.p{background:#6B3FC0!important}
+@media (max-width:760px){.four,.two{grid-template-columns:1fr 1fr}.meter{flex-wrap:wrap}.meter i{width:14px!important}}
+@media (max-width:760px){.three{grid-template-columns:1fr}.outrow{grid-template-columns:1fr}}
+.cell{display:inline-block;padding:4px 12px;border-radius:999px;color:#fff;font-weight:700;font-size:14px}
+.lvl0{background:#1C8F58}.lvl1{background:#B87A00}.lvl2{background:#C8243B}
+.clue{font-size:14px;opacity:.8;grid-column:1/-1}
+.pick{grid-column:1/-1;display:grid;gap:6px}
+.frz{font-size:22px;padding:16px 24px;background:#2F7DB5!important;color:#fff}
+</style>
+<div class="wrap">
+  <header class="top">
+    <div class="brand"><div class="mini" aria-hidden="true" style="font-size:50px;line-height:58px;text-align:center">🧵</div>
+      <div><h1>Trace It! HQ</h1><p>Year 8 AI · Week 2 Core · Lesson 4 · The Three-Stage Shape</p></div></div>
+    <span class="badge" id="totalBadge" aria-live="polite">Trace points: 0</span>
+  </header>
+  <nav class="tabs" role="tablist" aria-label="Games">
+    <button role="tab" id="tab-ss" aria-selected="true" aria-controls="ss">Stage Sorter</button>
+    <button role="tab" id="tab-ou" aria-selected="false" aria-controls="ou">Order Up</button>
+    <button role="tab" id="tab-tl" aria-selected="false" aria-controls="tl">Trace Lab</button>
+    <button role="tab" id="tab-tf" aria-selected="false" aria-controls="tf">True or False</button>
+    <button role="tab" id="tab-cases" aria-selected="false" aria-controls="cases">Case Files</button>
+  </nav>
+
+  <section class="panel" id="ss" role="tabpanel" aria-labelledby="tab-ss">
+    <div><span class="kicker">Warm up</span><h2>Stage Sorter: input, process or output?</h2></div>
+    <div class="hud"><span id="ssCount">1 / 12</span><span id="ssScore">Score 0</span></div>
+    <div class="bigcard pop" id="ssCard"></div>
+    <div class="three"><button class="btn b" data-v="I">📥 Input</button><button class="btn p" data-v="P">⚙️ Process</button><button class="btn g" data-v="O">📤 Output</button></div>
+    <div class="feedback" id="ssFb" aria-live="polite"></div>
+    <div class="row"><button class="btn alt" id="ssReset">Play again</button></div>
+  </section>
+
+  <section class="panel" id="ou" role="tabpanel" aria-labelledby="tab-ou" hidden>
+    <div><span class="kicker">One way only</span><h2>Order Up: tap the steps from first to last</h2></div>
+    <div class="hud"><span id="ouCount">Round 1 / 5</span><span id="ouScore">Perfect rounds 0</span></div>
+    <div class="tool" id="ouTool"></div>
+    <div class="steps" id="ouSteps"></div>
+    <div class="feedback" id="ouFb" aria-live="polite"></div>
+    <div class="row"><button class="btn" id="ouNext" hidden>Next round →</button><button class="btn alt" id="ouReset">Play again</button></div>
+  </section>
+
+  <section class="panel" id="tl" role="tabpanel" aria-labelledby="tab-tl" hidden>
+    <div><span class="kicker">Main lab</span><h2>Trace Lab: follow one item through four UAE tools</h2></div>
+    <p class="lead">For each tool, pick the INPUT, PROCESS and OUTPUT. Then answer the “what if?” question.</p>
+    <div class="row"><span class="badge" id="tlScore" style="background:var(--bg);color:var(--ink)">Score 0 / 16</span><span class="badge" id="tlStep" style="background:var(--bg);color:var(--ink)">Tool 1 of 4</span></div>
+    <div id="tlBox" style="display:grid;gap:10px"></div>
+    <div class="feedback" id="tlFb" aria-live="polite"></div>
+    <div class="row"><button class="btn alt" id="tlReset">Restart the lab</button></div>
+  </section>
+
+  <section class="panel" id="tf" role="tabpanel" aria-labelledby="tab-tf" hidden>
+    <div><span class="kicker">Not magic</span><h2>True or False: how does a workflow really behave?</h2></div>
+    <div class="hud"><span id="tfCount">1 / 10</span><span id="tfScore">Score 0</span></div>
+    <div class="bigcard pop" id="tfCard"></div>
+    <div class="two"><button class="btn g" data-v="T">✅ True</button><button class="btn r" data-v="F">❌ False</button></div>
+    <div class="feedback" id="tfFb" aria-live="polite"></div>
+    <div class="row"><button class="btn alt" id="tfReset">Play again</button></div>
+  </section>
+
+  <section class="panel" id="cases" role="tabpanel" aria-labelledby="tab-cases" hidden>
+    <div><span class="kicker">Case files</span><h2>Solve three detective cases</h2></div>
+    <div class="progress" id="caseProg"></div>
+    <div class="case" id="caseBox"></div>
+  </section>
+  <footer>Points are saved in this browser only. All tools are made up. No log-ins, no personal data.</footer>
+</div>
+<script>
+const $ = s => document.querySelector(s);
+const store = { get(k, d) { try { const v = localStorage.getItem('ti804_' + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } }, set(k, v) { try { localStorage.setItem('ti804_' + k, JSON.stringify(v)); } catch (e) {} } };
+const upd = () => { $('#totalBadge').textContent = 'Trace points: ' + [1,2,3,4,5].reduce((a, i) => a + store.get('p' + i, 0), 0); };
+upd();
+const tabs = ['ss', 'ou', 'tl', 'tf', 'cases'];
+tabs.forEach(t => $('#tab-' + t).addEventListener('click', () => { tabs.forEach(u => { $('#tab-' + u).setAttribute('aria-selected', u === t); $('#' + u).hidden = u !== t; }); store.set('tab', t); }));
+const t0 = store.get('tab', 'ss'); if (tabs.includes(t0)) $('#tab-' + t0).click();
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const fb = (id, ok, t) => { const f = $(id); f.className = 'feedback ' + (ok ? 'ok' : 'no'); f.textContent = t; };
+function quizGame(pfx, data, btnSel, n, key, labels, delay) {
+  let deck = [], i = 0, sc = 0, lock = false;
+  const start = () => { deck = shuffle(data); i = 0; sc = 0; $('#' + pfx + 'Fb').textContent = ''; $('#' + pfx + 'Fb').className = 'feedback'; show(); };
+  const show = () => { const btns = document.querySelectorAll(btnSel);
+    if (i >= deck.length) { $('#' + pfx + 'Card').textContent = 'Done! ' + sc + ' / ' + n; store.set(key, Math.max(store.get(key, 0), sc)); upd(); btns.forEach(b => b.disabled = true); return; }
+    btns.forEach(b => b.disabled = false); const c = $('#' + pfx + 'Card'); c.textContent = deck[i][0]; c.classList.remove('pop'); void c.offsetWidth; c.classList.add('pop');
+    $('#' + pfx + 'Count').textContent = (i + 1) + ' / ' + n; $('#' + pfx + 'Score').textContent = 'Score ' + sc; lock = false; };
+  document.querySelectorAll(btnSel).forEach(b => b.addEventListener('click', () => { if (lock) return; lock = true; const a = deck[i][1], ok = b.dataset.v === a; if (ok) sc++;
+    fb('#' + pfx + 'Fb', ok, (ok ? '✔ ' : '✘ ') + labels[a] + (deck[i][2] ? ' ' + deck[i][2] : '')); i++; setTimeout(show, delay || 1200); }));
+  $('#' + pfx + 'Reset').addEventListener('click', start); start();
+}
+quizGame('ss', [['📷 A photo of one date on the farm belt', 'I'], ['🧮 A model comparing colour, shape and skin', 'P'], ['🏷️ The label “Ripe, pack it”', 'O'], ['🎤 “What is the weather in Al Ain?”', 'I'], ['🗣️ “It is 32 degrees” read out loud', 'O'], ['🅿️ Matching a bay reading to learned patterns', 'P'], ['📡 A reading from the sensor above a parking bay', 'I'], ['🚦 The sign shows “Bay free”', 'O'], ['✍️ A photo of a handwritten shopping list', 'I'], ['🔤 Matching letter shapes to learned patterns', 'P'], ['📝 Typed text: “milk, bread, dates”', 'O'], ['⌨️ “When does the library open on Saturday?”', 'I']], '#ss .three .btn', 12, 'p1', { I: 'INPUT: the data that goes in.', P: 'PROCESS: a learned model changes it.', O: 'OUTPUT: the result that comes out.' });
+quizGame('tf', [['➡️ The arrows point one way: input, then process, then output.', 'T'], ['🧠 The process thinks and understands like a person.', 'F'], ['🔁 The same input gives a classifier the same output.', 'T'], ['🔀 The output can come before the input.', 'F'], ['🌀 An unclear input can lead to a strange output.', 'T'], ['🏆 A confident output is always correct.', 'F'], ['🧩 The model is patterns learned from many examples.', 'T'], ['🪄 The process works by magic, so it cannot be wrong.', 'F'], ['🧵 Tracing means following one item through each stage.', 'T'], ['📤 Once a result is printed, it must be right.', 'F']], '#tf .two .btn', 10, 'p4', { T: 'TRUE.', F: 'FALSE.' });
+
+/* 2 Order Up */
+const ROUNDS = [
+ { n: '📷 Photo-label app', s: ['You give the app a photo', 'A learned model matches patterns in the photo', 'A label comes out: “desert”', 'You check the label against the task'] },
+ { n: '🎤 Voice helper', s: ['You ask: “What is the weather in Al Ain?”', 'A model turns your words into a search and an answer', '“It is 32 degrees” is read out loud', 'You check it against the weather report'] },
+ { n: '🌴 Date Sorter', s: ['A photo of one date is taken on the belt', 'A model compares its colour, shape and skin', 'The label “Ripe, pack it” appears', 'A farmer checks a few dates by hand'] },
+ { n: '🅿️ Parking Sensor', s: ['The sensor reads the bay below it', 'A model matches the reading to “car” or “empty”', 'The sign shows “Bay taken”', 'An inspector checks the bay if drivers complain'] },
+ { n: '🎵 Music app', s: ['You play three songs you enjoy', 'A model finds songs with similar patterns', 'A new song suggestion appears', 'You decide whether you like it'] }];
+let ou;
+function ouInit() { ou = { r: 0, perfect: 0 }; ouRound(); }
+function ouRound() {
+  $('#ouFb').textContent = ''; $('#ouFb').className = 'feedback'; $('#ouNext').hidden = true;
+  if (ou.r >= ROUNDS.length) { $('#ouTool').innerHTML = '<b>🧵 All rounds done!</b><span>Perfect rounds: ' + ou.perfect + ' / 5. Input, then process, then output, then check.</span>'; $('#ouSteps').innerHTML = ''; store.set('p2', Math.max(store.get('p2', 0), ou.perfect)); upd(); return; }
+  const R = ROUNDS[ou.r]; ou.next = 0; ou.miss = false;
+  $('#ouCount').textContent = 'Round ' + (ou.r + 1) + ' / 5'; $('#ouScore').textContent = 'Perfect rounds ' + ou.perfect;
+  $('#ouTool').innerHTML = '<b>' + R.n + '</b> <span>Tap the four steps in the order the data flows.</span>';
+  $('#ouSteps').innerHTML = shuffle(R.s.map((t, i) => [t, i])).map(([t, i]) => `<button data-i="${i}"><span class="n">?</span><span>${t}</span></button>`).join('');
+  $('#ouSteps').querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+    if (b.classList.contains('done')) return; const i = +b.dataset.i;
+    if (i === ou.next) { b.classList.add('done'); b.querySelector('.n').textContent = i + 1; ou.next++;
+      if (ou.next === 4) { if (!ou.miss) ou.perfect++; fb('#ouFb', !ou.miss, ou.miss ? '✔ Done, with a slip. Remember: input, process, output, check.' : '✔ Perfect order! The arrows point one way.'); $('#ouScore').textContent = 'Perfect rounds ' + ou.perfect; store.set('p2', Math.max(store.get('p2', 0), ou.perfect)); upd(); $('#ouNext').hidden = false; } }
+    else { ou.miss = true; b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake'); fb('#ouFb', false, '✘ Not yet: what has to happen first?'); }
+  }));
+}
+$('#ouNext').addEventListener('click', () => { ou.r++; ouRound(); });
+$('#ouReset').addEventListener('click', ouInit); ouInit();
+
+/* 3 Trace lab */
+const TOOLS = [
+ { n: '🌴 Date Sorter, Liwa', i: [['A photo of one date on the belt', 1], ['The label “Ripe, pack it”', 0], ['The farm’s logo', 0]], p: [['A farmer guesses', 0], ['A model trained on labelled date photos matches colour, shape and skin', 1], ['The date is washed', 0]], o: [['The photo of the date', 0], ['The label “Ripe, pack it”', 1], ['The model', 0]], w: ['What if the photo is blurry and taken at night?', [['The output could be wrong, e.g. “Not ripe yet” for a ripe date.', 1], ['Nothing changes: the model always knows.', 0], ['The model will refuse to work forever.', 0]]] },
+ { n: '🅿️ Parking Sensor, Abu Dhabi', i: [['The sign “Bay taken”', 0], ['A reading from the sensor above the bay', 1], ['The driver’s name', 0]], p: [['A model matches the reading to patterns of “car” and “empty”', 1], ['The car is parked', 0], ['A person watches every bay all day', 0]], o: [['The sign shows “Bay free” or “Bay taken”', 1], ['The sensor reading', 0], ['The parking fee rules', 0]], w: ['A shadow makes the reading look like a car. Trust the output?', [['Yes: outputs are always right.', 0], ['No: a wrong input can give a wrong output, so check the bay.', 1], ['Yes: the process fixes every input.', 0]]] },
+ { n: '📲 Smart-Service Helper', i: [['You type: “When does the library open on Saturday?”', 1], ['The reply “9 am”', 0], ['The library building', 0]], p: [['The phone screen turns on', 0], ['The question is printed', 0], ['A model finds the most likely answer from learned patterns', 1]], o: [['The reply “9 am”', 1], ['Your typed question', 0], ['The keyboard', 0]], w: ['You type “wen libary opn sat?” with mistakes. What might happen?', [['The output will be perfect anyway.', 0], ['The output could be strange or wrong, so re-type clearly and check.', 1], ['The app will understand you like a friend.', 0]]] },
+ { n: '✍️ Handwriting Reader', i: [['Typed text: “milk, bread, dates”', 0], ['A model that learned letter shapes', 0], ['A photo of a handwritten shopping list', 1]], p: [['A model matches the letter shapes to patterns it learned', 1], ['The list is thrown away', 0], ['A person retypes the list', 0]], o: [['The photo of the list', 0], ['Typed text: “milk, bread, dates”', 1], ['The pen', 0]], w: ['Why does the model NOT “read” like a person?', [['It understands every word it sees.', 0], ['It matches shapes to learned patterns; it does not understand.', 1], ['It reads faster because it is magic.', 0]]] }];
+let tl;
+function tlInit() { tl = { t: 0, a: {}, score: 0, order: TOOLS.map(T => ({ i: shuffle(T.i), p: shuffle(T.p), o: shuffle(T.o), w: shuffle(T.w[1]) })) }; tlDraw(); $('#tlFb').textContent = ''; $('#tlFb').className = 'feedback'; }
+function tlDraw() {
+  $('#tlScore').textContent = 'Score ' + tl.score + ' / 16';
+  const box = $('#tlBox');
+  if (tl.t >= TOOLS.length) { $('#tlStep').textContent = 'Complete'; box.innerHTML = '<div class="tool"><b>🧵 Lab complete!</b> <span>Input, then process (a learned model, not magic), then output. A wrong or unclear input can give a wrong output, so we check.</span></div>'; return; }
+  $('#tlStep').textContent = 'Tool ' + (tl.t + 1) + ' of 4';
+  const T = TOOLS[tl.t], O = tl.order[tl.t], a = tl.a;
+  const grp = (k, list, lab) => `<span class="slotlab">${lab}</span><div class="chips" data-k="${k}">${list.map((o, j) => `<button data-j="${j}" class="${a[k] !== undefined ? (o[1] ? 'right' : (j === a[k] ? 'wrong' : '')) : ''}">${o[0]}</button>`).join('')}</div>`;
+  let h = `<div class="tool"><b>TOOL ${tl.t + 1} · ${T.n}</b> <span>Trace one item through the workflow.</span></div>` + grp('i', O.i, '📥 INPUT');
+  if (a.i !== undefined) h += grp('p', O.p, '⚙️ PROCESS');
+  if (a.p !== undefined) h += grp('o', O.o, '📤 OUTPUT');
+  if (a.o !== undefined) h += grp('w', O.w, '🤔 ' + T.w[0]);
+  if (a.w !== undefined) h += `<button class="btn" id="nextT">${tl.t < 3 ? 'Next tool →' : 'Finish'}</button>`;
+  box.innerHTML = h;
+  box.querySelectorAll('.chips').forEach(g => g.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; const k = g.dataset.k; if (a[k] !== undefined) return;
+    const j = +b.dataset.j, list = O[k]; a[k] = j; const ok = list[j][1] === 1; if (ok) tl.score++;
+    const lab = { i: 'the data that goes IN', p: 'what happens INSIDE: a learned model', o: 'the result that comes OUT', w: 'the process matches patterns; it does not think, and a bad input can give a bad output' }[k];
+    fb('#tlFb', ok, (ok ? '✔ Yes: ' : '✘ Not quite: look for ') + lab + '.'); store.set('p3', Math.max(store.get('p3', 0), tl.score)); upd(); tlDraw(); }));
+  const nb = $('#nextT'); if (nb) nb.addEventListener('click', () => { tl.t++; tl.a = {}; $('#tlFb').textContent = ''; $('#tlFb').className = 'feedback'; tlDraw(); });
+}
+$('#tlReset').addEventListener('click', tlInit); tlInit();
+
+/* 5 Cases */
+const CASES = [
+ { t: 'Case 1 · The Photo Label', s: 'An app looks at a photo and returns the label “desert”. Which order shows the workflow correctly?', o: ['Output the label, then process, then input.', 'Process first, then the input, then the output.', 'Input the photo, process it, output the label.', 'Just an input and an output, with no process.'], a: 2, w: 'Input, then process, then output.' },
+ { t: 'Case 2 · The Strange Output', s: 'A translate app meets a rare, blurry handwritten word and returns a strange output. Why did that happen?', o: ['The app truly understands words like a person.', 'The process matches patterns, so an odd input misleads it.', 'The output changed for no reason at all.', 'The phone screen was far too bright.'], a: 1, w: 'An odd input does not match the learned patterns well.' },
+ { t: 'Case 3 · The Wrong Reading', s: 'A parking-bay sensor gets a wrong reading (a shadow looks like a car) and passes it into its process. Would you trust the output?', o: ['Yes: once it leaves the process it must be correct.', 'Yes: outputs are always right once shown.', 'No: a screen can never be trusted at all.', 'No: a wrong input can produce a wrong output.'], a: 3, w: 'Wrong in, wrong out: check it.' }];
+let cI = 0, cRes = [];
+function caseDraw() {
+  $('#caseProg').innerHTML = CASES.map((_, i) => '<i class="' + (i < cRes.length ? (cRes[i] ? 'done' : 'miss') : i === cI ? 'now' : '') + '"></i>').join('');
+  const box = $('#caseBox');
+  if (cI >= CASES.length) { const sc = cRes.filter(Boolean).length; store.set('p5', Math.max(store.get('p5', 0), sc)); upd();
+    box.innerHTML = '<div class="end"><div class="big">' + sc + ' / 3 cases cracked</div><p class="lead">Input, process, output. The process is not magic.</p><button class="btn" id="cAgain">Play again</button></div>';
+    $('#cAgain').addEventListener('click', () => { cI = 0; cRes = []; caseDraw(); }); return; }
+  const c = CASES[cI];
+  box.innerHTML = '<div class="file">CASE FILE ' + (cI + 1) + ' / 3</div><h3>' + c.t + '</h3><p>' + c.s + '</p><div class="opts">' + c.o.map((o, j) => '<button data-j="' + j + '"><b>' + 'ABCD'[j] + '</b> <span>' + o + '</span></button>').join('') + '</div><div class="feedback" id="cFb"></div>';
+  box.querySelectorAll('.opts button').forEach(b => b.addEventListener('click', () => {
+    if (cRes.length > cI) return; const j = +b.dataset.j, ok = j === c.a; cRes.push(ok);
+    b.classList.add(ok ? 'right' : 'wrong'); box.querySelectorAll('.opts button')[c.a].classList.add('right');
+    fb('#cFb', ok, (ok ? '✔ Solved! ' : '✘ The answer is ' + 'ABCD'[c.a] + '. ') + c.w);
+    const n = document.createElement('button'); n.className = 'btn'; n.textContent = cI < 2 ? 'Next case →' : 'See my result'; n.addEventListener('click', () => { cI++; caseDraw(); }); box.appendChild(n);
+  }));
+}
+caseDraw();
+</script>
